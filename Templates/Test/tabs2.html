@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>동적 탭 + 닫기 버튼</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    .nav-link .close-btn {
+      margin-left: 8px;
+      color: #999;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .nav-link .close-btn:hover {
+      color: red;
+    }
+  </style>
+</head>
+<body class="p-4">
+
+  <h4>📌 닫기 버튼이 있는 동적 Tabs 예제</h4>
+
+  <ul class="nav nav-tabs" id="myTab" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active" id="tab-home" data-bs-toggle="tab" data-bs-target="#content-home"
+              type="button" role="tab" aria-controls="content-home" aria-selected="true">
+        기본 탭
+      </button>
+    </li>
+  </ul>
+
+  <div class="tab-content mt-3" id="myTabContent">
+    <div class="tab-pane fade show active" id="content-home" role="tabpanel" aria-labelledby="tab-home">
+      기본 탭 내용입니다.
+    </div>
+  </div>
+
+  <button class="btn btn-success mt-3" onclick="addNewTab()">새 탭 추가</button>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    let tabCount = 1;
+
+    function addNewTab() {
+      const tabId = `tab-${tabCount}`;
+      const contentId = `content-${tabCount}`;
+
+      // 탭 버튼 생성
+      const tabItem = document.createElement('li');
+      tabItem.classList.add('nav-item');
+      tabItem.setAttribute('role', 'presentation');
+      tabItem.innerHTML = `
+        <button class="nav-link" id="${tabId}" data-bs-toggle="tab" data-bs-target="#${contentId}"
+                type="button" role="tab" aria-controls="${contentId}" aria-selected="false">
+          새 탭 ${tabCount}
+          <span class="close-btn" onclick="closeTab(event, '${tabId}', '${contentId}')">&times;</span>
+        </button>`;
+
+      // 탭 콘텐츠 생성
+      const tabPane = document.createElement('div');
+      tabPane.classList.add('tab-pane', 'fade');
+      tabPane.id = contentId;
+      tabPane.setAttribute('role', 'tabpanel');
+      tabPane.setAttribute('aria-labelledby', tabId);
+      tabPane.innerHTML = `새 탭 ${tabCount}의 내용입니다.`;
+
+      document.getElementById('myTab').appendChild(tabItem);
+      document.getElementById('myTabContent').appendChild(tabPane);
+
+      // 새 탭 자동 활성화
+      const newTab = new bootstrap.Tab(document.getElementById(tabId));
+      newTab.show();
+
+      tabCount++;
+    }
+
+    function closeTab(event, tabId, contentId) {
+      event.stopPropagation();  // 탭 클릭 방지
+
+      const tabButton = document.getElementById(tabId);
+      const tabPane = document.getElementById(contentId);
+
+      // 현재 활성 탭일 경우 이전 탭으로 이동
+      const isActive = tabButton.classList.contains('active');
+      const previousTab = tabButton.closest('li').previousElementSibling?.querySelector('.nav-link');
+
+      // 삭제
+      tabButton.closest('li').remove();
+      if (tabPane) tabPane.remove();
+
+      if (isActive && previousTab) {
+        const previous = new bootstrap.Tab(previousTab);
+        previous.show();
+      }
+    }
+  </script>
+</body>
+</html>

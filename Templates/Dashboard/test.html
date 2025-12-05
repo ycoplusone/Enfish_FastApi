@@ -1,0 +1,157 @@
+{% include "Basis/head.html" %}
+
+{% include "Basis/navigation.html" %}
+
+ <style>
+    body {      
+      background-color: #f5f7fa;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    .dashboard {
+      display: flex;
+      flex-direction: column;
+      gap: 30px;
+    }
+
+    .summary {
+      display: flex;
+      gap: 20px;
+    }
+
+    .card {
+      flex: 1;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      padding: 20px;
+      text-align: center;
+    }
+
+    .card h2 {
+      margin: 0;
+      font-size: 24px;
+      color: #4a5568;
+    }
+
+    .card p {
+      font-size: 14px;
+      color: #718096;
+    }
+
+    .content {
+      display: flex;
+      gap: 30px;
+    }
+
+    #chart {
+      flex: 1;
+      height: 400px;
+      background: #fff;
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    #grid {
+      flex: 1;
+      background: #fff;
+      border-radius: 12px;
+      padding: 20px;
+    }
+  </style>
+
+  <h1>📊 판매 대시보드1</h1>
+  <div class="dashboard">
+    <!-- 요약 카드 -->
+    <div class="summary">
+      <div class="card">
+        <h2>₩5,800,000</h2>
+        <p>총 매출</p>
+      </div>
+      <div class="card">
+        <h2>320건</h2>
+        <p>총 주문수</p>
+      </div>
+      <div class="card">
+        <h2>152명</h2>
+        <p>신규 고객</p>
+      </div>
+      <div class="card">
+        <h2>152명</h2>
+        <p>신규 고객</p>
+      </div>
+      <div class="card">
+        <h2>152명</h2>
+        <p>신규 고객</p>
+      </div>            
+    </div>
+
+    <!-- 차트 + 표 -->
+    <div class="content">
+      <div id="chart"></div>
+      <div id="grid"></div>
+    </div>
+  </div>
+
+  <!-- Script -->
+
+
+
+  <script>
+
+    
+    // Chart 설정
+    const chartData = {
+      categories: ['1월', '2월', '3월', '4월', '5월', '6월'],
+      series: [
+        {
+          name: '노트북',
+          data: [1000, 1400, 1200, 1600, 1700, 1900]
+        },
+        {
+          name: '모니터',
+          data: [800, 900, 950, 1100, 1050, 1200]
+        }
+      ]
+    };
+
+    const chartOptions = {
+      chart: { title: '월별 제품 판매량' },
+      yAxis: { title: '판매 수량' },
+      xAxis: { title: '월별' },
+      series: { stack: false }
+    };
+
+    toastui.Chart.columnChart({
+      el: document.getElementById('chart'),
+      data: chartData,
+      options: chartOptions
+    });
+
+    // Grid 설정
+    const gridData = [
+      { month: '1월', notebook: 1000, monitor: 800 },
+      { month: '2월', notebook: 1400, monitor: 900 },
+      { month: '3월', notebook: 1200, monitor: 950 },
+      { month: '4월', notebook: 1600, monitor: 1100 },
+      { month: '5월', notebook: 1700, monitor: 1050 },
+      { month: '6월', notebook: 1900, monitor: 1200 }
+    ];
+
+    const grid = new tui.Grid({
+      el: document.getElementById('grid'),
+      columns: [
+        { header: 'rrr', name: 'month' },
+        { header: 'notebook', name: 'notebook' },
+        { header: 'monitor', name: 'monitor' }
+      ],
+      data: gridData
+    });    
+
+  </script>
+{% include "Basis/foot.html" %}
+

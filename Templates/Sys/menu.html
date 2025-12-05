@@ -1,0 +1,175 @@
+{% include "Basis/head.html" %}
+
+{% include "Basis/navigation.html" %}
+<div class="container">
+  <h2>메뉴 관리</h2>
+
+  <!-- 등록 입력 폼 -->
+  <form id="menu-form" class="row g-2 align-items-center mb-3">
+    <div class="col">
+      <input type="hidden" class="form-control" id="seq" placeholder="seq" />  
+      <input type="text" class="form-control" id="menu_id" placeholder="메뉴ID" required />
+    </div>
+    <div class="col">
+      <input type="text" class="form-control" id="menu_nm" placeholder="메뉴명" required />
+    </div>
+    <div class="col">
+      <input type="text" class="form-control" id="parent_nm" placeholder="상위명" required />
+    </div>    
+    <div class="col">
+      <input type="text" class="form-control" id="url_path" placeholder="URL" />
+    </div>
+    <div class="col">
+    <select class="form-select" id="use_yn" name="use_yn">
+        <option value="Y" selected>사용</option>
+        <option value="N">미사용</option>
+    </select>
+    </div>
+    <div class="col-auto">
+      <button type="submit" class="btn btn-success" id="btn_submit">등록</button>
+      <button type="button" class="btn btn-danger" id="btn_delete" style="display:none;" onclick="MenuDelete()">삭제</button>
+      <button type="reset" class="btn btn-warning">취소</button>
+    </div>
+  </form>
+    <!-- 그리드 start -->
+    <div id="grid"></div>
+    <!-- 그리드 end -->
+</div>  
+
+  
+<script>
+    const grid = new tui.Grid({
+        el: document.getElementById('grid'),
+        data: [],
+        scrollX: false,
+        scrollY: true,
+        bodyHeight: 500,
+        columns: [
+            { header: 'Seq'    , name: 'seq' },
+            { header: '메뉴ID'  , name: 'menu_id' },
+            { header: '메뉴명'  , name: 'menu_nm' },
+            { header: '상위명'  , name: 'parent_nm' },
+            { header: 'URL'     , name: 'url_path' },
+            { header: '사용여부' , name: 'use_yn' }
+        ],
+        selectionUnit: 'row',
+        editingEvent: 'click'      
+    });
+    // 더블클릭 이벤트 - start 
+    grid.on('dblclick', ev => {
+        const rowKey = ev.rowKey;
+        const columnName = ev.columnName;
+
+        if (rowKey != null) {
+            const rowData = grid.getRow(rowKey);
+            const {seq , menu_id,menu_nm, parent_nm, url_path, use_yn} = rowData;
+            document.getElementById('seq').value        = seq;
+            document.getElementById('menu_id').value    = menu_id;
+            document.getElementById('menu_nm').value    = menu_nm;
+            document.getElementById('parent_nm').value  = parent_nm;
+            document.getElementById('url_path').value   = url_path;
+            document.getElementById('use_yn').value     = use_yn;            
+            document.getElementById('btn_delete').style.display = 'inline-block';
+            document.getElementById('btn_submit').innerHTML = '수정';
+        }
+    });    
+    // 더블클릭 이벤트 - end
+
+    // 삭제 버튼 클릭 처리 - start
+    function MenuDelete() {
+        const seq         = document.getElementById('seq').value.trim();
+        if (confirm('정말 삭제하시겠습니까?')) {
+            fnCurl('DELETE', `/sys/menu/${seq}`, '').then(result => {
+                if (result.status_code === 200) {
+                    MenuSelects(); // 메뉴 목록 새로고침
+                } else {
+                    alert(result.detail);
+                }
+            });
+        }
+        initForm(); // 입력값 초기화
+    };    
+    // 삭제 버튼 클릭 처리 - end
+
+    // 입력폼 초기화
+    document.getElementById('menu-form').addEventListener('reset', function (e) {
+        e.preventDefault();
+        
+        document.getElementById('btn_delete').style.display = 'none';
+        initForm(); // 입력값 초기화
+        document.getElementById('seq').value = '';
+        console.log('입력폼 초기화');
+    });
+
+
+    // 등록 폼 처리
+    document.getElementById('menu-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        const seq         = document.getElementById('seq').value.trim();
+        const menu_id     = document.getElementById('menu_id').value.trim();
+        const menu_nm     = document.getElementById('menu_nm').value.trim();
+        const parent_nm   = document.getElementById('parent_nm').value.trim();
+        const url_path    = document.getElementById('url_path').value.trim();
+        const use_yn      = document.getElementById('use_yn').value.trim();
+
+        if (!menu_id || !menu_nm || !parent_nm || !url_path ) {
+            alert('필수 입력 항목입니다.');
+            return;
+        }
+      
+
+        if (seq == ''){
+            const param = { menu_id: menu_id , menu_nm: menu_nm , parent_nm: parent_nm , url_path: url_path , use_yn: use_yn};            
+            fnCurl('POST', '/sys/menu', param).then(result => {
+                if (result.status_code === 200) {
+                    MenuSelects(); // 메뉴 목록 새로고침                
+                } else {
+                    alert(result.detail);
+                }
+            });   
+        }else{
+            const param = {seq:seq , menu_id: menu_id , menu_nm: menu_nm , parent_nm: parent_nm , url_path: url_path , use_yn: use_yn};            
+            fnCurl('PUT', '/sys/menu', param).then(result => {
+                if (result.status_code === 200) {
+                    MenuSelects(); // 메뉴 목록 새로고침                
+                } else {
+                    alert(result.detail);
+                }
+            });   
+        }
+        document.getElementById('btn_delete').style.display = 'none';                
+        document.getElementById('btn_submit').innerHTML = '등록';
+        initForm(); // 입력값 초기화
+    });
+
+    
+    function initForm() {
+      document.getElementById('seq').value = '';
+      document.getElementById('menu_id').value = '';
+      document.getElementById('menu_nm').value = '';
+      document.getElementById('parent_nm').value = '';
+      document.getElementById('url_path').value = '';
+      document.getElementById('use_yn').value = 'Y';
+      
+    }
+
+
+    MenuSelects();
+    function MenuSelects(){
+      grid.resetData([]); // 그리드 초기화
+      // 서버에서 메뉴 목록을 가져오는 함수
+      fnCurl('GET', '/sys/menus','').then(result => {
+        if (result.status_code === 200) {
+            result.detail.forEach(menu => { 
+                const {seq , menu_id,menu_nm, parent_nm, url_path, use_yn} = menu;
+                grid.appendRow({ seq, menu_id,menu_nm, parent_nm, url_path, use_yn });
+            });
+        } else {
+          alert(result.detail);
+        }
+      });
+    }    
+  </script>
+
+{% include "Basis/foot.html" %}
+

@@ -1,0 +1,76 @@
+/* 전체 탭 컨테이너 */
+.ui-tabs {
+  font-family: 'Segoe UI', 'Apple SD Gothic Neo', sans-serif;
+  border: none;
+  margin-top: 20px;
+}
+
+/* 탭 헤더 (ul) */
+.ui-tabs .ui-tabs-nav {
+  border-bottom: 2px solid #e0e0e0;
+  padding-left: 0;
+  background: none;
+}
+
+/* 탭 항목 (li) */
+.ui-tabs .ui-tabs-nav li {
+  display: inline-block;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+}
+
+/* 탭 버튼 */
+.ui-tabs .ui-tabs-nav li a {
+  display: inline-block;
+  padding: 10px 16px;
+  text-decoration: none;
+  color: #555;
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.ui-tabs .ui-tabs-nav li a:hover {
+  color: #007bff;
+  border-color: #007bff33;
+}
+
+/* 활성 탭 */
+.ui-tabs .ui-tabs-nav li.ui-tabs-active a {
+  color: #007bff;
+  border-bottom: 3px solid #007bff;
+  font-weight: 600;
+  background: none;
+}
+
+/* 탭 콘텐츠 영역 */
+.ui-tabs .ui-tabs-panel {
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-top: none;
+  padding: 20px;
+  margin-top: -1px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  border-radius: 0 0 6px 6px;
+}
+
+/* 닫기 버튼 (X 아이콘) */
+.ui-tabs .ui-tabs-nav li .ui-icon-close {
+  margin-left: 8px;
+  background-image: none;
+  width: 12px;
+  height: 12px;
+  background-color: #ccc;
+  display: inline-block;
+  text-align: center;
+  font-size: 10px;
+  line-height: 12px;
+  border-radius: 50%;
+  color: #fff;
+}
+
+.ui-tabs .ui-tabs-nav li .ui-icon-close:hover {
+  background-color: #f44336;
+}
