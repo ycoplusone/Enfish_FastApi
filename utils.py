@@ -3,7 +3,9 @@ from fastapi.responses import RedirectResponse
 from passlib.context import CryptContext # 암호화
 from datetime import datetime, timedelta , timezone
 import jwt 
-
+import os
+from dotenv import load_dotenv
+from openai import OpenAI
 
 
 
@@ -12,7 +14,10 @@ class utils():
     __secret_key = '09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7'   #암호화키
     __algorithm  = "HS256"
 
-    __pwd_context = CryptContext(schemes=['bcrypt_sha256'] )    #암호화
+    __pwd_context = CryptContext(schemes=['bcrypt_sha256'] , deprecated="auto" )    #암호화
+    
+    load_dotenv()
+    __client    = None # OpenAi global var
 
     def __init__(self):
         '''초기'''
@@ -39,7 +44,7 @@ class utils():
         else:
             expire = datetime.now(timezone.utc) + timedelta(minutes=30)
         to_encode.update({"exp": expire})
-        encoded_jwt = jwt.encode(to_encode, self.__secret_key , algorithm=self.__algorithm)        
+        encoded_jwt = jwt.encode(to_encode, self.__secret_key , algorithm=self.__algorithm)             
         return encoded_jwt
     
     def token_decoe(self,token):
@@ -52,5 +57,19 @@ class utils():
             return True   # 문제 없음
         except Exception:
             return False    # 만료됨
+    
+    def getEnv(self , key:str):
+        __return = ''
+        try:
+            __return = os.getenv(key)
+            return __return
+        except Exception as e:
+            print('util.getEnv',e)
+            return __return
+        
+
+        
+
+        
 
 

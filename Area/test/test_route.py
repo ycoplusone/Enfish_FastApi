@@ -9,8 +9,8 @@ from starlette          import status
 from fastapi.security   import OAuth2PasswordRequestForm , OAuth2PasswordBearer
 from database           import engine , getDb
 from utils              import utils
-
 from datetime import datetime, timedelta
+
 
 from ..Models           import ModelTest as m_test
 from . import test_dantic   as d_test
@@ -20,6 +20,7 @@ from . import test_crud     as c_test
 #templates = Jinja2Templates(directory="Templates")
 router  = APIRouter()
 util    = utils()
+
 
 # FastSvelte 시작 지점 ------------------------------------------------------------------------------------------- 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/test/user/login")
@@ -168,7 +169,12 @@ def user_create( token : str):
         "기타" : _data
     }   
     
-    
+
+@router.post("/test1", description='.env 테스트')
+def test1( ):    
+    ''''''
+    _str = util.getEnv('openai_api_key')
+    return {'ttt':_str}
     
     
 
