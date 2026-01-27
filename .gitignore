@@ -1,7 +1,7 @@
 node_modules
 
 # Output
-.pyc
+**/*.pyc
 .output
 .vercel
 .netlify
