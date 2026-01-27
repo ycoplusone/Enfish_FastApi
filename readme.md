@@ -3,12 +3,9 @@
 # database.py       => 데이터베이스 연결 객체.
 # statics           => 정적파일 js libary 같은것.
 # area              => models , cruds , dantics , router 등을 모듈 단위로 합쳐서 다시 개발한다.
-# Cruds             => crud 처리 부분 => area 에 통합 예정
-# models            => SQLAlchemy 모델 정의. => area 에 통합 예정
-# Dantics           => Pydantic 의 모델 폴더. => area 에 통합 예정
-# Ways              => router 파일 폴더. => area 에 통합 예정
-# Templates         => ui 파일 폴더.    => 외부 sveltekit 으로 변경 예정.
 
+# 실행하기
+    - cd D:\python_workspace\Enfish_FastApi && uvicorn main:app --reload    
 
 # 설치 모듈 목록
     pip install fastapi
