@@ -2,13 +2,12 @@ from fastapi import FastAPI , Query , HTTPException , Depends ,Request
 from fastapi.responses import HTMLResponse , JSONResponse , RedirectResponse 
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
-
 from fastapi.responses import FileResponse
-#from fastapi.templating import Jinja2Templates
 
 from Area.test import test_route as ways_test
 from Area.system import system_route
 from Area.Rag import Rag_route 
+from Area.DashBoard import dashboard_route
 from Area.Models import ModelTest , ModelSystem
 from database import engine
 
@@ -45,3 +44,4 @@ app.mount("/statics", StaticFiles(directory="statics")              , name="stat
 app.include_router(ways_test.router     , prefix="/test"        , tags=["test"]  , include_in_schema=True) # include_in_schema=True는 스웨거에 포함시키는것
 app.include_router(system_route.router  , prefix="/system"      , tags=["System"] , include_in_schema=True) # include_in_schema=True는 스웨거에 포함시키는것
 app.include_router(Rag_route.router     , prefix="/ai"          , include_in_schema=True) # include_in_schema=True는 스웨거에 포함시키는것
+app.include_router(dashboard_route.router  , prefix="/dashboard"      , tags=["dashboard"] , include_in_schema=True) # include_in_schema=True는 스웨거에 포함시키는것

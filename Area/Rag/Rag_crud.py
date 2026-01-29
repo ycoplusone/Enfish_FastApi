@@ -211,7 +211,7 @@ def ch1_generate_response(system_prompt , user_message , model='gpt-4o-mini'):
     
     :param system_prompt(str) : AI의 응답 방식을 지정하는 시스템 메세지
     :param user_message(str): 사용자 질의 또는 메시지
-    :param model(str): 사용할 언어 모델 이름
+    :param model(str): 사용할 언어 모델 이름   gpt-5-nano , gpt-4o-mini
     return :
         dict 생성된 AI응답을 포함한 API응답 객체    
     '''

@@ -7,6 +7,9 @@
 # 실행하기
     - cd D:\python_workspace\Enfish_FastApi && uvicorn main:app --reload    
 
+# git 업로드 파일 --cached 제외
+    - git rm [파일명] --cached
+
 # 설치 모듈 목록
     pip install fastapi
     pip install pydantic
@@ -27,9 +30,6 @@
         => pip install python-multipart
         => pip install "python-jose[cryptography]"
 
-# 실행방법.
-    uvicorn main:app --reload
-
 # 문서기반
     http://127.0.0.1:8000/docs      => swagger  기반 api 문서
     http://127.0.0.1:8000/redoc     => Redoc    기반 문서
@@ -41,3 +41,4 @@
     - fitz 설치 : pip install PyMuPDF
 # OLLAMA 관련
     - 올마 서버 실행 : ollama serve 
+
