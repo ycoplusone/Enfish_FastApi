@@ -3,6 +3,7 @@ from typing             import List
 from starlette          import status
 from datetime           import datetime, timedelta
 from sqlalchemy.orm     import Session
+import os
 
 # 확장 라리브러리
 import openai
@@ -1454,3 +1455,63 @@ def ollamarag(query:str=''):
         } 
 
 #----------------- ollama 를 이용한 온프라미스 환경에서의 RAG : end
+
+
+#----------------- LangChain 을 이용한 RAG : begin
+@router.post("/langchain/" , tags=['AI / Rag / simple'],  description='langchain ')
+def lanchain(query:str=''):
+    '''
+    서론 
+        langchain 프레임워크를 이용하니 RAG 품질이 올라 간듯하다.
+        개발의 편의성과 RAG의 품질이 같이 올라가 사용이 하는것이 여러 모로 좋을것 같다.
+        langchain과 local OLLAMA와 연결해서 작업한지는 아니 했지만 결과는 비슷하게 품질이 올라갈것으로 추론한다.
+        가장 기반이 되는 청킹을 효과적으로 처리 해주는 역할을 기본적으로 하니 말이다.
+    
+    본론
+        - 원인은 문맥을 기준으로 청크데이터를 분할 한것이 주요한듯하다.
+    
+    결론
+        - 이후 청킹시 metadata를 같이 생성하여 품질을 높일수 있는 방법을 추가 하면 좋을듯하다.
+    '''
+    CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+    file_path = f"{CURRENT_DIR}\AI_Understanding.pdf"
+    res = rc.langchain_RAG(file_path , query)
+    return {
+            'question': query ,
+            'answer':res.content ,
+        }     
+
+
+    '''
+    # 1. 텍스트 추출
+    text = rc.langchain_extract_text_from_pdf(file_path)
+
+    # 2. chunks 생성
+    #rc.langchain_chunk_text1(text , 900,150) # 단순 문자 분할
+    texts = rc.langchain_chunk_text2(text , 900,150) # 문맥을 깨지 않는 단위로 분할
+
+    # 3. 임베딩 생성 vertorstore로 반환한다.
+    vectorstore = rc.langchain_create_embeddings( texts )
+
+    # 4. 의미 기반 검색 수행 : 주어진 쿼리에 대해 가장 관련성 높은 텍스트 청크 2개
+    top_texts = rc.langchain_search( query ,vectorstore,k=3)
+
+    print(f"질문 : { query }")
+    print(f"검색 결과")
+    for text ,score in top_texts:
+        print('*'*10)
+        print(f"{text.page_content} ")
+        print(f"{score}")
+    '''
+        
+    
+
+
+
+
+
+
+
+   
+
+#----------------- LangChain 을 이용한 RAG : end

@@ -23,6 +23,7 @@
     pip install PyJWT 
     pip install numpy
     pip install requests
+    
 
     https://github.com/mondersky/tabscolor-vscode : vscode 에서의 프로젝트별 탭 색생 변경 가이드
     
@@ -42,3 +43,7 @@
 # OLLAMA 관련
     - 올마 서버 실행 : ollama serve 
 
+# LangChain 관련
+    pip install "langchain[openai]"==0.3.27
+    pip install langchain-community==0.3.27
+    pip install faiss-cpu

@@ -6879,3 +6879,159 @@ def ollama_generate_response(system_prompt, user_message, model="gemma2:2b"):
 #----------------- ollama 를 이용한 온프라미스 환경에서의 RAG : end
 
 
+from langchain.chat_models import init_chat_model
+from langchain_core.messages import HumanMessage , SystemMessage , AIMessage
+from langchain_core.runnables import RunnablePassthrough
+from langchain.prompts import PromptTemplate , ChatPromptTemplate
+from langchain_openai import ChatOpenAI
+from langchain_openai import OpenAIEmbeddings
+from langchain_community.vectorstores import FAISS
+from langchain.text_splitter import CharacterTextSplitter , RecursiveCharacterTextSplitter , TokenTextSplitter
+
+#----------------- LangChain 을 이용한 RAG : begin
+def langchain_RAG1():
+    '''테스트 1'''
+    ''''''
+    # 1. 임베딩 모델 초기화
+    embeddings = OpenAIEmbeddings(model="text-embedding-3-large")
+
+    # 2. 단어들을 임베딩으로 변환
+    texts = ['강아지','고양이','자동차','비행기','오리너구리','가시두더지','코끼리','수각룡','인간']
+    word_embeddings = embeddings.embed_documents(texts)
+
+    # 3. 쿼리 임베딩 생성
+    query = '동물'
+    query_embedding = embeddings.embed_query(query)
+
+    # 4. 코사인 유사도 계산 함수
+    def consine_similarity(vec1 , vec2):
+        #두 벡터간의 코사인 유사도 계산
+        dot_product = np.dot(vec1 , vec2)
+        norm_vec1 = np.linalg.norm(vec1)
+        norm_vec2 = np.linalg.norm(vec2)
+        return dot_product / (norm_vec1 * norm_vec2 + 1e-9) #작은 값 추가로 0 나누기 방지
+
+    # 5. 각 단어와 쿼리의 유사도 계산
+    print(f"{query} 에 대한 유사도 : ")
+    for word , embedding in zip(texts , word_embeddings):
+        similarity = consine_similarity( query_embedding , embedding )
+        print(f"{word} : {similarity:.3f}")
+
+def langchain_RAG2():
+    # 1. 임베딩 모델 초기화
+    embeddings = OpenAIEmbeddings(model="text-embedding-3-large")
+
+    # 2. 텍스트를 벡터로 변환하고 FAISS 벡터 스토어에 저장
+    texts = ['강아지','고양이','자동차','비행기','오리너구리','가시두더지','코끼리','수각룡','인간']
+    vectorstore = FAISS.from_texts( texts , embedding=embeddings ) #텍스트를 벡터로 변환하고 FAISS 벡터 스토어에 저장
+
+
+    # 3. 유사한 문서 검색
+    query = '동물'
+    docs = vectorstore.similarity_search(query , k=4 ) # 유사한 문서 검색
+
+    # 4. 검색 결과 출력
+    print('검색 결과')
+    for i , doc in enumerate(docs):
+        print(f"{i+1} . {doc.page_content} ")
+    
+    
+def langchain_extract_text_from_pdf(pdf_path):
+    # PDF 파일 열기
+    mypdf = fitz.open(pdf_path)
+    all_text = ""  # 전체 텍스트를 저장할 문자열 초기화
+
+    # 각 페이지를 순회하며 텍스트 추출
+    for page_num in range(mypdf.page_count):
+        page = mypdf[page_num]               # 해당 페이지 가져오기
+        text = page.get_text("text")         # 텍스트 형식으로 내용 추출
+        all_text += text                     # 추출된 텍스트 누적
+
+    # 추출된 전체 텍스트 반환
+    return all_text
+
+def langchain_chunk_text1(text:str , n:int , overlap:int ):
+    '''가장 기본적인 텍스트 분할 도구야. 특정 문자를 기준으로 텍스트를 자르기 때문에 구조가 단순'''
+    ct = CharacterTextSplitter(separator="\n\n" , chunk_size=n , chunk_overlap=overlap,length_function=len)
+    texts = ct.split_text(text)
+    print('*'*10)
+    print(f"분할된 청크 개수: {len(texts)}")
+    print(f"첫 번째 청크 내용 샘플: {texts[0][:50]}...")
+
+def langchain_chunk_text2(text:str , n:int , overlap:int ):
+    '''# 문단 -> 문장 -> 단어 순으로 적절한 지점을 찾아 분할하므로 훨씬 유연함'''
+    recursive_splitter = RecursiveCharacterTextSplitter(
+        chunk_size = n,
+        chunk_overlap = overlap,
+        separators = ["\n\n", "\n", " ", ""]
+    )    
+    texts = recursive_splitter.split_text(text)
+    #print('*'*10)
+    #print(f"분할된 청크 개수: {len(texts)}")
+    #print(f"첫 번째 청크 내용 샘플: {texts[0][:50]}...")    
+
+    return texts
+
+def langchain_create_embeddings( texts , model="text-embedding-3-large"):
+    '''임베딩 생성'''
+    embeddings = OpenAIEmbeddings(model=model)
+    vertorstore = FAISS.from_texts( texts , embeddings )
+    return vertorstore
+
+def langchain_search(query , vectorstore , k:int=2):
+    '''유사도 의미 기반 검색'''    
+    results2 = vectorstore.similarity_search_with_score(query , k) # 문장 + 유사도 포함.
+    return results2
+    
+def langchain_RAG(file_path:str , query:str):
+    '''langchain 을 이용한 RAG 구현'''
+    # 0-1. 텍스트 추출
+    text = langchain_extract_text_from_pdf(file_path)
+
+    # 0-2. chunks 생성
+    texts = langchain_chunk_text2(text , 900,150) # 문맥을 깨지 않는 단위로 분할
+
+    # 3. 임베딩 생성 vertorstore로 반환한다.
+    #vectorstore = langchain_create_embeddings( texts )
+
+    ## 4. 의미 기반 검색 수행 : 주어진 쿼리에 대해 가장 관련성 높은 텍스트 청크 2개
+    #top_texts = langchain_search( query ,vectorstore,k=3)
+
+    # 1. 리트리버 생성
+    embeddings = OpenAIEmbeddings(model="text-embedding-3-large")
+    retriever = FAISS.from_texts( texts , embeddings ).as_retriever(search_type="similarity" , search_kwargs={"k":2})
+
+    # 2. 리트리버 사용자 검색
+    #results = retriever.get_relevant_documents(query)
+
+    # 3. 리트리버를 사용한 llm 호출
+    llm = ChatOpenAI(model_name="gpt-4o-mini")
+
+    message = """
+    질문에 대한 답변을 작성할 때, 리트리버에서 가져온 문서를 참고하여 답변을 작성하세요.
+
+    질문:
+    {question}
+
+    참고:
+    {context}
+    """
+
+    prompt = ChatPromptTemplate.from_messages( [("human",message)] )
+    chain = {"context": retriever , "question" : RunnablePassthrough() }|prompt|llm
+
+    response = chain.invoke(query)
+
+    #print("응답")
+    #print(response.content)
+    return response
+
+
+
+
+
+
+    
+    
+
+#----------------- LangChain 을 이용한 RAG : end
