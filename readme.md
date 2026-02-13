@@ -47,3 +47,5 @@
     pip install "langchain[openai]"==0.3.27
     pip install langchain-community==0.3.27
     pip install faiss-cpu
+    pip install langchain langchain-community langchain-openai langchain_google_genai
+

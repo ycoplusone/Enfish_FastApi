@@ -6882,11 +6882,15 @@ def ollama_generate_response(system_prompt, user_message, model="gemma2:2b"):
 from langchain.chat_models import init_chat_model
 from langchain_core.messages import HumanMessage , SystemMessage , AIMessage
 from langchain_core.runnables import RunnablePassthrough
+from langchain_core.output_parsers import StrOutputParser
 from langchain.prompts import PromptTemplate , ChatPromptTemplate
 from langchain_openai import ChatOpenAI
 from langchain_openai import OpenAIEmbeddings
-from langchain_community.vectorstores import FAISS
+from langchain_google_genai import GoogleGenerativeAIEmbeddings,ChatGoogleGenerativeAI 
+from langchain_community.vectorstores import FAISS 
+from langchain_community.vectorstores.utils import DistanceStrategy
 from langchain.text_splitter import CharacterTextSplitter , RecursiveCharacterTextSplitter , TokenTextSplitter
+
 
 #----------------- LangChain 을 이용한 RAG : begin
 def langchain_RAG1():
@@ -7026,8 +7030,116 @@ def langchain_RAG(file_path:str , query:str):
     #print(response.content)
     return response
 
+def langchain_gemma_RAG(file_path:str , query:str):
+    '''langchain 을 이용한 RAG 구현'''
+    # 0-1. 텍스트 추출
+    def pdf_ext_text(pdf_path):
+        # PDF 파일 열기
+        mypdf = fitz.open(pdf_path)
+        all_text = ""  # 전체 텍스트를 저장할 문자열 초기화
 
+        # 각 페이지를 순회하며 텍스트 추출
+        for page_num in range(mypdf.page_count):
+            page = mypdf[page_num]               # 해당 페이지 가져오기
+            text = page.get_text("text")         # 텍스트 형식으로 내용 추출
+            all_text += text                     # 추출된 텍스트 누적
+        # 추출된 전체 텍스트 반환
+        return all_text    
+    text = pdf_ext_text(file_path)
 
+    # 0-2. chunks 생성
+    def chunk_text(text:str , n:int , overlap:int ):
+        # 문단 -> 문장 -> 단어 순으로 적절한 지점을 찾아 분할하므로 훨씬 유연함
+        recursive_splitter = RecursiveCharacterTextSplitter(
+            chunk_size = n,
+            chunk_overlap = overlap,
+            separators = ["\n\n", "\n", " ", ""]
+        )    
+        texts = recursive_splitter.split_text(text)
+        return texts
+    texts = chunk_text(text , 900,150) # 문맥을 깨지 않는 단위로 분할
+    
+
+    # 1. 리트리버 생성
+    embeddings_model    = GoogleGenerativeAIEmbeddings(model='gemini-embedding-001')
+    vectorstore = FAISS.from_texts(texts=texts , embedding=embeddings_model)
+    retriever   = vectorstore.as_retriever( search_type="similarity" , search_kwargs={"k":2} )
+    
+    # 2. 리트리버 사용자 검색
+    results = retriever.get_relevant_documents(query)
+    
+    # 3. 리트리버를 사용한 llm 호출
+    model = ChatGoogleGenerativeAI(model="gemini-2.5-pro")   
+    template = """아래의 문맥(Context)만을 사용하여 질문에 답하세요.
+
+    Question:
+    {question}
+
+    Context:
+    {context}
+    """     
+
+    prompt = ChatPromptTemplate.from_template( template )
+    # 5. RAG 체인 생성
+    rag_chain = (
+        {"context": retriever, "question": RunnablePassthrough()}
+        | prompt
+        | model
+    )    
+    
+
+    # 6. 실행 테스트    
+    response = rag_chain.invoke( query )
+
+    print(f"답변: {response.content}")
+    
+def ragtest():
+    import os
+    from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI
+    
+    from langchain_core.prompts import ChatPromptTemplate
+    from langchain_core.runnables import RunnablePassthrough
+    from langchain_core.output_parsers import StrOutputParser
+
+    # 1. API 키 설정 (Google AI Studio에서 발급받은 키 입력)
+    os.environ["GOOGLE_API_KEY"] = "AIzaSyCgl9Ka11RkPm7EQk7yEJ90GpDIKGggoNk"
+
+    # 2. 데이터 준비 (간단한 예시 데이터)
+    texts = [
+        "우정의 집 재산에는 월세 아파트 포함됩니다.",
+        "봄이는 2026년 3월부터 GIS 어학원에 다닐 예정입니다.",
+        "엔비디아 알파마요는 자율주행을 위한 추론형 AI 모델입니다."
+    ]
+
+    # 3. 임베딩 및 벡터 스토어 구축 (메모리 상에 저장)
+    embeddings = GoogleGenerativeAIEmbeddings(model="gemini-embedding-001")
+    vectorstore = FAISS.from_texts(texts=texts, embedding=embeddings)
+    retriever = vectorstore.as_retriever()
+
+    # 4. 모델 및 프롬프트 설정
+    model = ChatGoogleGenerativeAI(model="gemini-2.5-pro")
+    template = """아래의 문맥(Context)만을 사용하여 질문에 답하세요. 
+    모르면 모른다고 답하고, 친절한 친구처럼 반말로 답해줘.
+
+    Context: {context}
+
+    Question: {question}
+    """
+    prompt = ChatPromptTemplate.from_template(template)
+
+    # 5. RAG 체인 생성
+    rag_chain = (
+        {"context": retriever, "question": RunnablePassthrough()}
+        | prompt
+        | model
+        | StrOutputParser()
+    )
+
+    # 6. 실행 테스트
+    question = "봄이가 언제부터 어학원에 가?"
+    response = rag_chain.invoke(question)
+    print(f"답변: {response}")    
+    
 
 
 

@@ -1474,7 +1474,7 @@ def lanchain(query:str=''):
         - 이후 청킹시 metadata를 같이 생성하여 품질을 높일수 있는 방법을 추가 하면 좋을듯하다.
     '''
     CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
-    file_path = f"{CURRENT_DIR}\AI_Understanding.pdf"
+    file_path = f"{CURRENT_DIR}\\AI_Understanding.pdf"
     res = rc.langchain_RAG(file_path , query)
     return {
             'question': query ,
@@ -1503,7 +1503,30 @@ def lanchain(query:str=''):
         print(f"{text.page_content} ")
         print(f"{score}")
     '''
-        
+
+@router.post("/langchain/gemini" , tags=['AI / Rag / simple'],  description='langchain ')
+def lanchain_gemini(query:str=''):
+    '''
+    서론
+        위 작업에서 기존 openai 모델을 이용해서 개발한 내용을 그대로 구글 GEMINI 로 대응하는것이다.
+    
+    본론
+        개발 내용은 위사항ㅇ과 같다.
+    
+    결론
+    '''
+    CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+    file_path = f"{CURRENT_DIR}\\AI_Understanding.pdf"
+    #res = rc.langchain_gemma_RAG(file_path , query)
+    res = rc.ragtest()
+    '''
+    return {
+            'question': query ,
+            'answer':res.content ,
+        }     
+    '''
+
+           
     
 
 
